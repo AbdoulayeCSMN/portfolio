@@ -2,6 +2,7 @@ import { Card, CardContent, CardDescription, CardFooter, CardHeader, CardTitle }
 import { Button } from "@components/ui/button"
 import { Badge } from "@components/ui/badge"
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@components/ui/tabs"
+import Link from "next/link";
 import {
   Code,
   Palette,
@@ -32,7 +33,7 @@ const services = [
       "Responsive design mobile-first",
       "Tests automatisés"
     ],
-    price: "À partir de 2 500€",
+    price: "Sur devis",
     popular: true,
     color: "from-blue-500 to-cyan-500",
   },
@@ -48,7 +49,7 @@ const services = [
       "Design responsive",
       "Accessibilité WCAG"
     ],
-    price: "À partir de 1 800€",
+    price: "Sur devis",
     popular: false,
     color: "from-purple-500 to-pink-500",
   },
@@ -64,7 +65,7 @@ const services = [
       "Conteneurisation Docker",
       "Monitoring & logging"
     ],
-    price: "À partir de 3 000€",
+    price: "Sur devis",
     popular: false,
     color: "from-green-500 to-emerald-500",
   },
@@ -80,7 +81,7 @@ const services = [
       "Notifications push",
       "Stores d'applications"
     ],
-    price: "À partir de 4 000€",
+    price: "Sur devis",
     popular: true,
     color: "from-orange-500 to-red-500",
   },
@@ -96,7 +97,7 @@ const services = [
       "Analytics & reporting",
       "Technical SEO"
     ],
-    price: "À partir de 1 200€",
+    price: "Sur devis",
     popular: false,
     color: "from-yellow-500 to-amber-500",
   },
@@ -213,7 +214,6 @@ export default function Services() {
                 
                 <div className="pt-4">
                   <div className="text-2xl font-bold">{service.price}</div>
-                  <p className="text-sm text-muted-foreground">TVA non applicable, article 293 B du CGI</p>
                 </div>
               </CardContent>
               

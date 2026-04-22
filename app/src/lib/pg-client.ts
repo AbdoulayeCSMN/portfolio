@@ -384,3 +384,156 @@ export async function closePool(): Promise<void> {
 }
 
 export default dbPool;
+// ─── Projects ─────────────────────────────────────────────────────────────────
+
+export interface Project {
+  id: string;
+  title: string;
+  slug: string;
+  description?: string;
+  category?: string;
+  technologies?: string[];
+  github_url?: string;
+  live_url?: string;
+  cover_image?: string;
+  is_featured: boolean;
+  is_published: boolean;
+  year?: string;
+  status?: string;
+  sort_order: number;
+  created_at: string;
+  updated_at: string;
+}
+
+export async function getProjects(): Promise<Project[]> {
+  try {
+    return await executeQuery(async (client) => {
+      const result = await client.query(
+        'SELECT * FROM projects WHERE is_published = true ORDER BY sort_order ASC, created_at DESC'
+      );
+      return result.rows;
+    });
+  } catch (error) {
+    console.error('Error fetching projects:', error);
+    return [];
+  }
+}
+
+export async function getAllProjects(): Promise<Project[]> {
+  try {
+    return await executeQuery(async (client) => {
+      const result = await client.query(
+        'SELECT * FROM projects ORDER BY sort_order ASC, created_at DESC'
+      );
+      return result.rows;
+    });
+  } catch (error) {
+    console.error('Error fetching all projects:', error);
+    return [];
+  }
+}
+
+export async function createProject(
+  data: Omit<Project, 'id' | 'created_at' | 'updated_at'>
+): Promise<Project> {
+  return await executeQuery(async (client) => {
+    const result = await client.query(
+      `INSERT INTO projects (title, slug, description, category, technologies,
+        github_url, live_url, cover_image, is_featured, is_published, year, status, sort_order)
+       VALUES ($1,$2,$3,$4,$5,$6,$7,$8,$9,$10,$11,$12,$13) RETURNING *`,
+      [data.title, data.slug, data.description, data.category, data.technologies,
+       data.github_url, data.live_url, data.cover_image, data.is_featured,
+       data.is_published, data.year, data.status, data.sort_order]
+    );
+    return result.rows[0];
+  });
+}
+
+export async function updateProject(
+  id: string,
+  data: Partial<Omit<Project, 'id' | 'created_at' | 'updated_at'>>
+): Promise<Project | null> {
+  return await executeQuery(async (client) => {
+    const result = await client.query(
+      `UPDATE projects SET
+        title        = COALESCE($1, title),
+        slug         = COALESCE($2, slug),
+        description  = COALESCE($3, description),
+        category     = COALESCE($4, category),
+        technologies = COALESCE($5, technologies),
+        github_url   = COALESCE($6, github_url),
+        live_url     = COALESCE($7, live_url),
+        cover_image  = COALESCE($8, cover_image),
+        is_featured  = COALESCE($9, is_featured),
+        is_published = COALESCE($10, is_published),
+        year         = COALESCE($11, year),
+        status       = COALESCE($12, status),
+        sort_order   = COALESCE($13, sort_order),
+        updated_at   = NOW()
+       WHERE id = $14 RETURNING *`,
+      [data.title, data.slug, data.description, data.category, data.technologies,
+       data.github_url, data.live_url, data.cover_image, data.is_featured,
+       data.is_published, data.year, data.status, data.sort_order, id]
+    );
+    return result.rows[0] ?? null;
+  });
+}
+
+export async function deleteProject(id: string): Promise<boolean> {
+  return await executeQuery(async (client) => {
+    const result = await client.query('DELETE FROM projects WHERE id = $1 RETURNING id', [id]);
+    return (result.rowCount ?? 0) > 0;
+  });
+}
+
+// ─── Admin Auth ────────────────────────────────────────────────────────────────
+
+export interface AdminUser {
+  id: string;
+  username: string;
+  email: string;
+  password_hash: string;
+  is_active: boolean;
+  last_login_at?: string;
+  created_at: string;
+  updated_at: string;
+}
+
+export async function getAdminByUsername(username: string): Promise<AdminUser | null> {
+  return await executeQuery(async (client) => {
+    const result = await client.query(
+      'SELECT * FROM admin_users WHERE username = $1 AND is_active = true LIMIT 1',
+      [username]
+    );
+    return result.rows[0] ?? null;
+  });
+}
+
+export async function createAdminSession(userId: string, token: string, expiresAt: Date): Promise<void> {
+  await executeQuery(async (client) => {
+    await client.query(
+      'INSERT INTO admin_sessions (user_id, token, expires_at) VALUES ($1, $2, $3)',
+      [userId, token, expiresAt]
+    );
+    await client.query(
+      'UPDATE admin_users SET last_login_at = NOW() WHERE id = $1',
+      [userId]
+    );
+  });
+}
+
+export async function getAdminSession(token: string): Promise<{ user_id: string } | null> {
+  return await executeQuery(async (client) => {
+    const result = await client.query(
+      'SELECT user_id FROM admin_sessions WHERE token = $1 AND expires_at > NOW() LIMIT 1',
+      [token]
+    );
+    return result.rows[0] ?? null;
+  });
+}
+
+export async function deleteAdminSession(token: string): Promise<void> {
+  await executeQuery(async (client) => {
+    await client.query('DELETE FROM admin_sessions WHERE token = $1', [token]);
+  });
+}

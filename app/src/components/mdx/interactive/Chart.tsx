@@ -70,7 +70,7 @@ export function Chart({ type = 'bar', title, data, color = '#6366f1', height = 2
             <YAxis tick={{ fontSize: 12 }} />
             <Tooltip />
             <Bar dataKey="value" radius={[4, 4, 0, 0]}>
-              {data.map((_: any, i: number) => (
+              {data && data.map((_: any, i: number) => (
                 <Cell key={i} fill={COLORS[i % COLORS.length]} />
               ))}
             </Bar>

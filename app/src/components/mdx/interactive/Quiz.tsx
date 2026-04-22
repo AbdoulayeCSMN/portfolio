@@ -27,7 +27,7 @@ export function Quiz({ question, options, correct, explanation }: QuizProps) {
       </p>
       <h4 className="text-base font-semibold mb-4">{question}</h4>
       <div className="space-y-2">
-        {options.map((option, idx) => {
+        {options && options.map((option, idx) => {
           const isSelected = selected === idx;
           const isCorrectOption = idx === correct;
           let optionClass = 'border hover:bg-muted cursor-pointer';
